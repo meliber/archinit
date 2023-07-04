@@ -56,7 +56,7 @@ create_user() {
     if id -u $USER_NAME >/dev/null 2>&1; then
         echo "User $USER_NAME already exists."
     else
-        useradd -m $USER_NAME
+        useradd -mG wheel $USER_NAME
     fi
     echo "$USER_NAME ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER_NAME
     echo "$USER_NAME:$USER_NAME" | chpasswd
