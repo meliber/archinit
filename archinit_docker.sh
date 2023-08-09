@@ -3,6 +3,7 @@
 # read public keys from file
 KEYFILE="public_keys.txt"
 PUBLIC_KEYS=()
+export USER_NAME=han
 
 read_public_keys() {
     while IFS= read -r line; do
@@ -24,12 +25,6 @@ fi
 # update pacman db
 pacman_db_update() {
     pacman -Syy
-}
-
-# get user name
-get_user_name() {
-    echo -n "Enter a user name: "
-    read USER_NAME
 }
 
 # initialize pacman keyring
@@ -66,7 +61,6 @@ create_user() {
 set_sshd() {
     $PACMANS "openssh"
     sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
-    systemctl enable sshd
 }
 
 # set up public key
@@ -95,7 +89,6 @@ install_packages() {
 
 main() {
     read_public_keys
-    get_user_name
     pacman_keyring_init
     add_archlinuxcn_repo
     pacman_db_update
@@ -105,10 +98,6 @@ main() {
     install_packages
     ssh_prompt
     $PACMANS "-u"
-    echo "All Done!"
-    echo "Rebooting in 5 seconds..."
-    sleep 5
-    reboot
 }
 
 main
