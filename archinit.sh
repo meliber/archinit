@@ -26,7 +26,7 @@ read_public_keys() {
 }
 
 update() {
-    pacman -Syyu
+    pacman -Syyu --noconfirm
 }
 
 # update pacman db
