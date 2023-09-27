@@ -13,10 +13,10 @@ read_public_keys() {
 PACMANS="pacman -S --needed --noconfirm"
 
 # packages for installing
-PACKAGES="base-devel git vim rsync curl wget openssh sudo gcc make"
+PACKAGES="base-devel git which vim rsync curl wget openssh sudo gcc make"
 
 # check if root
-if [[ $EUID -ne 0 ]]; then
+if [ $EUID -ne 0 ]; then
     echo "This script must be run as root."
     exit 1
 fi
@@ -83,7 +83,7 @@ set_public_key() {
 
 # change bash prompt for ssh session
 ssh_prompt(){
-    echo "if [ -n\"$SSH_CLIENT\" ] || [ -n \"$SSH_TTY\" ]; then" >> /home/$USER_NAME/.bashrc
+    echo "if [ -n\'$SSH_CLIENT\' ] || [ -n \'$SSH_TTY\' ]; then" >> /home/$USER_NAME/.bashrc
     echo "    export PS1=\"\[\033[0;32m\][\u@\h \w]$\[\033[0m\] \"" >> /home/$USER_NAME/.bashrc
     echo "fi" >> /home/$USER_NAME/.bashrc
 }
