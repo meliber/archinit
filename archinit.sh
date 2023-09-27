@@ -4,6 +4,7 @@
 KEYFILE="public_keys.txt"
 PUBLIC_KEYS=()
 
+log='archinit.log'
 myname=han
 
 read_public_keys() {
@@ -114,5 +115,5 @@ main() {
     reboot
 }
 
-main
+main 2>&1 | tee $log
 
