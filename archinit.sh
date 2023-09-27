@@ -1,22 +1,22 @@
 #!/bin/bash
 
 # read public keys from file
-KEYFILE="public_keys.txt"
-PUBLIC_KEYS=()
+keyfile="public_keys.txt"
+public_keys=()
 
 log='archinit.log'
 myname=han
 
 read_public_keys() {
     while IFS= read -r line; do
-        PUBLIC_KEYS+=("$line")
-    done < "$KEYFILE"
+        public_keys+=("$line")
+    done < "$keyfile"
 }
 
-PACMANS="pacman -S --needed --noconfirm"
+pacmans="pacman -S --needed --noconfirm"
 
 # packages for installing
-PACKAGES="base-devel git which vim rsync curl wget openssh sudo gcc make"
+packages="base-devel git which vim rsync curl wget openssh sudo gcc make"
 
 # check if root
 if [ $EUID -ne 0 ]; then
@@ -31,8 +31,13 @@ pacman_db_update() {
 
 # get user name
 get_user_name() {
-    echo -n "Enter a user name: "
-    read USER_NAME
+    if [ -z $myname ]; then
+
+        echo -n "Enter a user name: "
+        read user_name
+    else
+        user_name=$myname
+    fi
 }
 
 # initialize pacman keyring
@@ -40,7 +45,7 @@ pacman_keyring_init() {
     pacman-key --init
     pacman-key --populate
     pacman_db_update
-    $PACMANS "archlinux-keyring"
+    $pacmans "archlinux-keyring"
 }
 
 # add archlinuxcn repository
@@ -49,56 +54,56 @@ add_archlinuxcn_repo() {
     echo -e "\n[archlinuxcn]" >> /etc/pacman.conf
     echo "Include = /etc/pacman.d/mirrorlist-archlinuxcn" >> /etc/pacman.conf
     pacman_db_update
-    $PACMANS "archlinuxcn-keyring"
-    $PACMANS "paru"
+    $pacmans "archlinuxcn-keyring"
+    $pacmans "paru"
 }
 
 # create user
 create_user() {
-    $PACMANS "sudo"
-    if id -u $USER_NAME >/dev/null 2>&1; then
-        echo "User $USER_NAME already exists."
+    $pacmans "sudo"
+    if id -u $user_name >/dev/null 2>&1; then
+        echo "User $user_name already exists."
     else
-        useradd -mG wheel $USER_NAME
+        useradd -mG wheel $user_name
     fi
-    echo "$USER_NAME ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/$USER_NAME
-    echo "$USER_NAME:$USER_NAME" | chpasswd
+    echo "$user_name ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers.d/$user_name
+    echo "$user_name:$user_name" | chpasswd
 }
 
 # set up sshd
 set_sshd() {
-    $PACMANS "openssh"
+    $pacmans "openssh"
     sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config
     systemctl enable sshd
 }
 
 # set up public key
 set_public_key() {
-    mkdir -p /home/$USER_NAME/.ssh
+    mkdir -p /home/$user_name/.ssh
     mkdir -p /root/.ssh
 
-    for key in "${PUBLIC_KEYS[@]}"; do
-        echo -e "\n$key" >> /home/$USER_NAME/.ssh/authorized_keys
+    for key in "${public_keys[@]}"; do
+        echo -e "\n$key" >> /home/$user_name/.ssh/authorized_keys
         echo -e "\n$key" >> /root/.ssh/authorized_keys
     done
-    chown -R $USER_NAME:$USER_NAME /home/$USER_NAME/.ssh
+    chown -R $user_name:$user_name /home/$user_name/.ssh
 }
 
 # change bash prompt for ssh session
 ssh_prompt(){
-    echo "if [ -n\'$SSH_CLIENT\' ] || [ -n \'$SSH_TTY\' ]; then" >> /home/$USER_NAME/.bashrc
-    echo "    export PS1=\"\[\033[0;32m\][\u@\h \w]$\[\033[0m\] \"" >> /home/$USER_NAME/.bashrc
-    echo "fi" >> /home/$USER_NAME/.bashrc
+    echo "if [ -n\'$SSH_CLIENT\' ] || [ -n \'$SSH_TTY\' ]; then" >> /home/$user_name/.bashrc
+    echo "    export PS1=\"\[\033[0;32m\][\u@\h \w]$\[\033[0m\] \"" >> /home/$user_name/.bashrc
+    echo "fi" >> /home/$user_name/.bashrc
 }
 
 # install packages
 install_packages() {
-    $PACMANS $PACKAGES
+    $pacmans $packages
 }
 
 main() {
     read_public_keys
-    echo $myname | get_user_name
+    get_user_name
     pacman_keyring_init
     add_archlinuxcn_repo
     pacman_db_update
@@ -107,8 +112,8 @@ main() {
     set_sshd
     install_packages
     ssh_prompt
-    $PACMANS "-u"
-    echo "user name is $myname"
+    $pacmans "-u"
+    echo "user name is $user_name"
     echo "All Done!"
     echo "Rebooting in 5 seconds..."
     sleep 5
