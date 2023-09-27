@@ -10,7 +10,12 @@ log='archinit.log'
 myname=han
 
 # read public keys from file
-keyfile="public_keys.txt"
+if [ -f "public_keys.txt" ]; then
+    keyfile="public_keys.txt"
+else
+    echo "public_keys.txt does not exist"
+    exit 1
+fi
 public_keys=()
 
 # check if the current user is root
@@ -23,6 +28,10 @@ read_public_keys() {
     while IFS= read -r line; do
         public_keys+=("$line")
     done < "$keyfile"
+    if [ -z "$public_keys" ]; then
+        echo "public_keys.txt is empty"
+        exit 1
+    fi
 }
 
 update() {
