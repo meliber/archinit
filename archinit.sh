@@ -4,6 +4,8 @@
 KEYFILE="public_keys.txt"
 PUBLIC_KEYS=()
 
+myname=han
+
 read_public_keys() {
     while IFS= read -r line; do
         PUBLIC_KEYS+=("$line")
@@ -95,7 +97,7 @@ install_packages() {
 
 main() {
     read_public_keys
-    get_user_name
+    echo $myname | get_user_name
     pacman_keyring_init
     add_archlinuxcn_repo
     pacman_db_update
@@ -105,6 +107,7 @@ main() {
     install_packages
     ssh_prompt
     $PACMANS "-u"
+    echo "user name is $myname"
     echo "All Done!"
     echo "Rebooting in 5 seconds..."
     sleep 5
