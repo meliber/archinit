@@ -114,6 +114,10 @@ install_packages() {
     $pacmans $packages
 }
 
+clear_pkg_cache() {
+    rm -rfv /var/cache/pacman/pkg/*
+}
+
 echo_and_reboot() {
     echo "user name is $user_name"
     echo "All Done!"
@@ -134,6 +138,7 @@ main() {
     install_packages
     ssh_prompt
     update
+    clear_pkg_cache
     echo_and_reboot
 }
 
