@@ -91,7 +91,7 @@ set_public_key() {
 
 # change bash prompt for ssh session
 ssh_prompt(){
-    echo "if [ -n\'$SSH_CLIENT\' ] || [ -n \'$SSH_TTY\' ]; then" >> /home/$user_name/.bashrc
+    echo 'if [ -n $SSH_CLIENT ] || [ -n $SSH_TTY ]; then' >> /home/$user_name/.bashrc
     echo "    export PS1=\"\[\033[0;32m\][\u@\h \w]$\[\033[0m\] \"" >> /home/$user_name/.bashrc
     echo "fi" >> /home/$user_name/.bashrc
 }
