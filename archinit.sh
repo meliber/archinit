@@ -1,11 +1,23 @@
 #!/bin/bash
 
+pacmans="pacman -Sy --needed --noconfirm"
+
+# packages for installing
+# paru is in archlinuxcn repository
+packages="base-devel git which vim rsync curl wget openssh sudo gcc make paru"
+
+log='archinit.log'
+myname=han
+
 # read public keys from file
 keyfile="public_keys.txt"
 public_keys=()
 
-log='archinit.log'
-myname=han
+# check if the current user is root
+if [ $EUID -ne 0 ]; then
+    echo "This script must be run as root."
+    exit 1
+fi
 
 read_public_keys() {
     while IFS= read -r line; do
@@ -13,16 +25,9 @@ read_public_keys() {
     done < "$keyfile"
 }
 
-pacmans="pacman -S --needed --noconfirm"
-
-# packages for installing
-packages="base-devel git which vim rsync curl wget openssh sudo gcc make"
-
-# check if root
-if [ $EUID -ne 0 ]; then
-    echo "This script must be run as root."
-    exit 1
-fi
+update() {
+    pacman -Syyu
+}
 
 # update pacman db
 pacman_db_update() {
@@ -55,7 +60,6 @@ add_archlinuxcn_repo() {
     echo "Include = /etc/pacman.d/mirrorlist-archlinuxcn" >> /etc/pacman.conf
     pacman_db_update
     $pacmans "archlinuxcn-keyring"
-    $pacmans "paru"
 }
 
 # create user
@@ -91,7 +95,7 @@ set_public_key() {
 
 # change bash prompt for ssh session
 ssh_prompt(){
-    echo 'if [ -n $SSH_CLIENT ] || [ -n $SSH_TTY ]; then' >> /home/$user_name/.bashrc
+    echo 'if [ -n "$SSH_CLIENT" ] || [ -n "$SSH_TTY" ]; then' >> /home/$user_name/.bashrc
     echo "    export PS1=\"\[\033[0;32m\][\u@\h \w]$\[\033[0m\] \"" >> /home/$user_name/.bashrc
     echo "fi" >> /home/$user_name/.bashrc
 }
@@ -101,23 +105,27 @@ install_packages() {
     $pacmans $packages
 }
 
-main() {
-    read_public_keys
-    get_user_name
-    pacman_keyring_init
-    add_archlinuxcn_repo
-    pacman_db_update
-    create_user
-    set_public_key
-    set_sshd
-    install_packages
-    ssh_prompt
-    $pacmans "-u"
+echo_and_reboot() {
     echo "user name is $user_name"
     echo "All Done!"
     echo "Rebooting in 5 seconds..."
     sleep 5
     reboot
+}
+
+main() {
+    read_public_keys
+    get_user_name
+    pacman_keyring_init
+    add_archlinuxcn_repo
+    update
+    create_user
+    set_public_key
+    set_sshd
+    install_packages
+    ssh_prompt
+    update
+    echo_and_reboot
 }
 
 main 2>&1 | tee $log
