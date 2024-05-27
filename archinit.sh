@@ -67,6 +67,8 @@ add_archlinuxcn_repo() {
     echo "Server = https://mirrors.ocf.berkeley.edu/archlinuxcn/\$arch" > /etc/pacman.d/mirrorlist-archlinuxcn
     echo -e "\n[archlinuxcn]" >> /etc/pacman.conf
     echo "Include = /etc/pacman.d/mirrorlist-archlinuxcn" >> /etc/pacman.conf
+    # https://www.archlinuxcn.org/archlinuxcn-keyring-manually-trust-farseerfc-key/
+    pacman-key --lsign-key "farseerfc@archlinux.org"
     pacman_db_update
     $pacmans "archlinuxcn-keyring"
 }
